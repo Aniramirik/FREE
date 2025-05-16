@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prisma School Chat</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <style>
+    :root {
+      --bg-light: #f4f6f8;
+      --bg-dark: #1e1e1e;
+      --text-light: #2c3e50;
+      --text-dark: #ffffff;
+      --card-light: #ffffff;
+      --card-dark: #2c2c2c;
+      --primary: #3498db;
+      --primary-dark: #2980b9;
+      --border-color: #ccc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      margin: 0;
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+    .header-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .dark-toggle {
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--primary);
+      transition: transform 0.2s;
+    }
+    .dark-toggle:hover { transform: scale(1.2); }
+    #group-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .group-card {
+      background: var(--card-light);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+      cursor: pointer;
+      flex: 1 0 180px;
+      text-align: center;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .group-card:hover { transform: translateY(-3px); }
+    body.dark .group-card { background: var(--card-dark); }
+    #chat-view { display: none; }
+    #back-btn {
+      float: right;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    #chat {
+      max-height: 400px;
+      overflow-y: auto;
+      background: var(--card-light);
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    body.dark #chat { background: var(--card-dark); }
+    .msg {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #ecf0f1;
+      padding: 12px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    body.dark .msg { background: #3a3a3a; }
+    .msg img {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .msg-content {
+      display: flex;
+      flex-direction: column;
+    }
+    .msg-content .time {
+      font-size: 0.75em;
+      color: #888;
+      margin-top: 4px;
+    }
+    input, button, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover { background: var(--primary-dark); }
+    #group-list-view { margin-bottom: 20px; }
+    #setup-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #setup-box {
+      background: var(--card-light);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+    }
+    body.dark #setup-box { background: var(--card-dark); }
+  </style>
+</head>
+<body>
+<div class="header-controls">
+  <h2>Prisma School Chat</h2>
+  <button class="dark-toggle" onclick="toggleDarkMode()">🌓</button>
+</div>
+
+<div id="group-list-view">
+  <h3>Select a Group</h3>
+  <div id="group-cards"></div>
+</div>
+
+<div id="chat-view">
+  <button id="back-btn" onclick="goBack()">⬅️</button>
+  <h3 id="chat-group-name"></h3>
+  <div id="chat"></div>
+  <input id="message" placeholder="Type your message...">
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<div id="setup-modal">
+  <div id="setup-box">
+    <h3>Set Up Your Account</h3>
+    <input type="text" id="setup-display-name" placeholder="Display Name">
+    <input type="text" id="setup-username" placeholder="Username">
+    <textarea id="setup-bio" placeholder="Bio"></textarea>
+    <input type="file" id="setup-pfp" accept="image/*">
+    <button onclick="finishSetup()">Finish Setup</button>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAe0j-iB4gapzSq1zy2a6j4kwaET8JXZ_8",
+    authDomain: "nopeeking-e272a.firebaseapp.com",
+    databaseURL: "https://nopeeking-e272a-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "nopeeking-e272a",
+    storageBucket: "nopeeking-e272a.appspot.com",
+    messagingSenderId: "193204663242",
+    appId: "1:193204663242:web:46523ab13715b022b09533"
+  };
+  const app = firebase.initializeApp(firebaseConfig);
+
+  let currentUser = null;
+  let currentGroup = null;
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+  }
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      firebase.database().ref("users/" + user.uid).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (!data || !data.setupComplete) {
+          document.getElementById("setup-modal").style.display = "flex";
+        } else {
+          loadGroups();
+        }
+      });
+    } else {
+      firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    }
+  });
+
+  const reader = new FileReader();
+reader.onload = function(e) {
+  const base64Image = e.target.result;
+
+  firebase.database().ref("users/" + uid).set({
+    displayName: name,
+    username,
+    bio,
+    photoData: base64Image,
+    setupComplete: true
+  }).then(() => {
+    document.getElementById("setup-modal").style.display = "none";
+    location.reload();
+  });
+};
+reader.readAsDataURL(file);
+
+
+  function loadGroups() {
+    firebase.database().ref("group_metadata").once("value", snap => {
+      const cards = document.getElementById("group-cards");
+      cards.innerHTML = "";
+      const groups = snap.val();
+      for (let key in groups) {
+        const g = groups[key];
+        if (g.privacy === "public" || (g.members && g.members[currentUser.uid])) {
+          const card = document.createElement("div");
+          card.className = "group-card";
+          card.textContent = g.name;
+          card.onclick = () => enterGroup(key, g.name);
+          cards.appendChild(card);
+        }
+      }
+    });
+  }
+
+  function enterGroup(key, name) {
+    currentGroup = key;
+    document.getElementById("group-list-view").style.display = "none";
+    document.getElementById("chat-view").style.display = "block";
+    document.getElementById("chat-group-name").textContent = name;
+    const ref = firebase.database().ref("rooms/" + key);
+    document.getElementById("chat").innerHTML = "";
+    ref.on("child_added", snap => {
+      const data = snap.val();
+      const div = document.createElement("div");
+      div.className = "msg";
+      const img = document.createElement("img");
+      img.src = data.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(data.name || "User");
+      const content = document.createElement("div");
+      content.className = "msg-content";
+      content.innerHTML = `<strong>${data.name}</strong>: ${data.msg}<span class='time'>(${data.time})</span>`;
+      div.appendChild(img);
+      div.appendChild(content);
+      document.getElementById("chat").appendChild(div);
+      document.getElementById("chat").scrollTop = chat.scrollHeight;
+    });
+  }
+
+  function sendMessage() {
+    const msg = document.getElementById("message").value;
+    if (msg && currentGroup) {
+      firebase.database().ref("rooms/" + currentGroup).push({
+        name: currentUser.displayName,
+        msg,
+        time: new Date().toLocaleTimeString(),
+        photoURL: currentUser.photoURL || ""
+      });
+      document.getElementById("message").value = "";
+    }
+  }
+
+  function goBack() {
+    document.getElementById("chat-view").style.display = "none";
+    document.getElementById("group-list-view").style.display = "block";
+    document.getElementById("chat").innerHTML = "";
+  }
+</script>
+</body>
+</html>

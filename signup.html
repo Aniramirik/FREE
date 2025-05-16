@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - Prisma School Chat</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 250px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h2>Create an Account</h2>
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+  <button onclick="emailSignup()">Sign Up</button>
+  <button onclick="emailLogin()">Login</button>
+  <p>Already have an account? <a href="index.html">Login here</a></p>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAe0j-iB4gapzSq1zy2a6j4kwaET8JXZ_8",
+      authDomain: "nopeeking-e272a.firebaseapp.com",
+      projectId: "nopeeking-e272a",
+      storageBucket: "nopeeking-e272a.appspot.com",
+      messagingSenderId: "193204663242",
+      appId: "1:193204663242:web:46523ab13715b022b09533"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function emailSignup() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(result => {
+          alert("Account created! You can now login.");
+          window.location.href = "index.html";
+        })
+        .catch(error => alert("Signup failed: " + error.message));
+    }
+      function emailLogin() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(result => {
+          alert("Login successful!");
+          window.location.href = "index.html";
+        })
+        .catch(error => alert("Login failed: " + error.message));
+    }
+  </script>
+</body>
+</html>
+
