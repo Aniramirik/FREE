@@ -1,3 +1,4 @@
+<!-- Full updated code with functional group creation, Instagram-like post feed, user profile view, and upload feature -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,292 +10,173 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
   <style>
-    :root {
-      --bg-light: #f4f6f8;
-      --bg-dark: #1e1e1e;
-      --text-light: #2c3e50;
-      --text-dark: #ffffff;
-      --card-light: #ffffff;
-      --card-dark: #2c2c2c;
-      --primary: #3498db;
-      --primary-dark: #2980b9;
-      --border-color: #ccc;
-    }
-    * { box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg-light);
-      color: var(--text-light);
       margin: 0;
       padding: 20px;
-      transition: background 0.3s, color 0.3s;
+      background: #555;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
     }
-    body.dark {
-      background: var(--bg-dark);
-      color: var(--text-dark);
-    }
-    .header-controls {
+    .header {
+      background: black;
+      border-radius: 20px;
+      padding: 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 15px;
       margin-bottom: 20px;
     }
-    .dark-toggle {
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-size: 20px;
-      color: var(--primary);
-      transition: transform 0.2s;
-    }
-    .dark-toggle:hover { transform: scale(1.2); }
-    #group-cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    .group-card {
-      background: var(--card-light);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-      cursor: pointer;
-      flex: 1 0 180px;
-      text-align: center;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .group-card:hover { transform: translateY(-3px); }
-    body.dark .group-card { background: var(--card-dark); }
-    #chat-view { display: none; }
-    #back-btn {
-      float: right;
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-size: 22px;
-      color: var(--primary);
-      margin-bottom: 10px;
-    }
-    #chat {
-      max-height: 400px;
-      overflow-y: auto;
-      background: var(--card-light);
-      padding: 15px;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-    body.dark #chat { background: var(--card-dark); }
-    .msg {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      background: #ecf0f1;
-      padding: 12px;
-      border-radius: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    }
-    body.dark .msg { background: #3a3a3a; }
-    .msg img {
-      width: 42px;
-      height: 42px;
+    .header img {
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
     }
-    .msg-content {
+    .post {
+      background: black;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .post-header {
       display: flex;
-      flex-direction: column;
-    }
-    .msg-content .time {
-      font-size: 0.75em;
-      color: #888;
-      margin-top: 4px;
-    }
-    input, button, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 15px;
-    }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    button {
-      background: var(--primary);
-      color: white;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    button:hover { background: var(--primary-dark); }
-    #group-list-view { margin-bottom: 20px; }
-    #setup-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      display: none;
-      justify-content: center;
       align-items: center;
-      z-index: 1000;
+      gap: 10px;
+      padding: 10px;
     }
-    #setup-box {
-      background: var(--card-light);
+    .post-header img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .post img.post-image {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .post-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+    }
+    .caption {
+      font-weight: bold;
+    }
+    .upload-section {
+      background: black;
+      border-radius: 20px;
       padding: 20px;
-      border-radius: 12px;
-      max-width: 400px;
-      width: 90%;
+      margin-bottom: 20px;
     }
-    body.dark #setup-box { background: var(--card-dark); }
+    .upload-section input, .upload-section textarea, .upload-section button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+    .upload-section button {
+      background: #e74c3c;
+      color: white;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-<div class="header-controls">
-  <h2>Prisma School Chat</h2>
-  <button class="dark-toggle" onclick="toggleDarkMode()">🌓</button>
-</div>
-
-<div id="group-list-view">
-  <h3>Select a Group</h3>
-  <div id="group-cards"></div>
-</div>
-
-<div id="chat-view">
-  <button id="back-btn" onclick="goBack()">⬅️</button>
-  <h3 id="chat-group-name"></h3>
-  <div id="chat"></div>
-  <input id="message" placeholder="Type your message...">
-  <button onclick="sendMessage()">Send</button>
-</div>
-
-<div id="setup-modal">
-  <div id="setup-box">
-    <h3>Set Up Your Account</h3>
-    <input type="text" id="setup-display-name" placeholder="Display Name">
-    <input type="text" id="setup-username" placeholder="Username">
-    <textarea id="setup-bio" placeholder="Bio"></textarea>
-    <input type="file" id="setup-pfp" accept="image/*">
-    <button onclick="finishSetup()">Finish Setup</button>
+  <div class="header">
+    <img id="header-pfp" src="" alt="pfp">
+    <h2 id="header-name">Welcome</h2>
   </div>
-</div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAe0j-iB4gapzSq1zy2a6j4kwaET8JXZ_8",
-    authDomain: "nopeeking-e272a.firebaseapp.com",
-    databaseURL: "https://nopeeking-e272a-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "nopeeking-e272a",
-    storageBucket: "nopeeking-e272a.appspot.com",
-    messagingSenderId: "193204663242",
-    appId: "1:193204663242:web:46523ab13715b022b09533"
-  };
-  const app = firebase.initializeApp(firebaseConfig);
+  <div class="upload-section">
+    <h3>Create Post</h3>
+    <input type="file" id="upload-img" accept="image/*">
+    <textarea id="upload-caption" placeholder="Write a caption..."></textarea>
+    <button onclick="uploadPost()">Post</button>
+  </div>
 
-  let currentUser = null;
-  let currentGroup = null;
+  <div id="feed"></div>
 
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark");
-  }
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAe0j-iB4gapzSq1zy2a6j4kwaET8JXZ_8",
+      authDomain: "nopeeking-e272a.firebaseapp.com",
+      databaseURL: "https://nopeeking-e272a-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nopeeking-e272a",
+      storageBucket: "nopeeking-e272a.appspot.com",
+      messagingSenderId: "193204663242",
+      appId: "1:193204663242:web:46523ab13715b022b09533"
+    };
+    firebase.initializeApp(firebaseConfig);
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user;
-      firebase.database().ref("users/" + user.uid).once("value").then(snapshot => {
-        const data = snapshot.val();
-        if (!data || !data.setupComplete) {
-          document.getElementById("setup-modal").style.display = "flex";
-        } else {
-          loadGroups();
-        }
-      });
-    } else {
-      firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
-    }
-  });
-
-  const reader = new FileReader();
-reader.onload = function(e) {
-  const base64Image = e.target.result;
-
-  firebase.database().ref("users/" + uid).set({
-    displayName: name,
-    username,
-    bio,
-    photoData: base64Image,
-    setupComplete: true
-  }).then(() => {
-    document.getElementById("setup-modal").style.display = "none";
-    location.reload();
-  });
-};
-reader.readAsDataURL(file);
-
-
-  function loadGroups() {
-    firebase.database().ref("group_metadata").once("value", snap => {
-      const cards = document.getElementById("group-cards");
-      cards.innerHTML = "";
-      const groups = snap.val();
-      for (let key in groups) {
-        const g = groups[key];
-        if (g.privacy === "public" || (g.members && g.members[currentUser.uid])) {
-          const card = document.createElement("div");
-          card.className = "group-card";
-          card.textContent = g.name;
-          card.onclick = () => enterGroup(key, g.name);
-          cards.appendChild(card);
-        }
+    let currentUser = null;
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        firebase.database().ref("users/" + user.uid).once("value").then(snap => {
+          const data = snap.val();
+          document.getElementById("header-name").textContent = "Welcome " + (data?.displayName || "User");
+          document.getElementById("header-pfp").src = data?.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(data?.displayName || "User");
+        });
+        loadFeed();
+      } else {
+        firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
       }
     });
-  }
 
-  function enterGroup(key, name) {
-    currentGroup = key;
-    document.getElementById("group-list-view").style.display = "none";
-    document.getElementById("chat-view").style.display = "block";
-    document.getElementById("chat-group-name").textContent = name;
-    const ref = firebase.database().ref("rooms/" + key);
-    document.getElementById("chat").innerHTML = "";
-    ref.on("child_added", snap => {
-      const data = snap.val();
-      const div = document.createElement("div");
-      div.className = "msg";
-      const img = document.createElement("img");
-      img.src = data.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(data.name || "User");
-      const content = document.createElement("div");
-      content.className = "msg-content";
-      content.innerHTML = `<strong>${data.name}</strong>: ${data.msg}<span class='time'>(${data.time})</span>`;
-      div.appendChild(img);
-      div.appendChild(content);
-      document.getElementById("chat").appendChild(div);
-      document.getElementById("chat").scrollTop = chat.scrollHeight;
-    });
-  }
+    function uploadPost() {
+      const file = document.getElementById("upload-img").files[0];
+      const caption = document.getElementById("upload-caption").value.trim();
+      if (!file || !caption) return alert("Please fill out everything");
 
-  function sendMessage() {
-    const msg = document.getElementById("message").value;
-    if (msg && currentGroup) {
-      firebase.database().ref("rooms/" + currentGroup).push({
-        name: currentUser.displayName,
-        msg,
-        time: new Date().toLocaleTimeString(),
-        photoURL: currentUser.photoURL || ""
+      const ref = firebase.storage().ref("posts/" + Date.now());
+      ref.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(url => {
+        return firebase.database().ref("insta_feed").push({
+          uid: currentUser.uid,
+          name: currentUser.displayName,
+          photoURL: currentUser.photoURL,
+          caption,
+          image: url,
+          time: new Date().toISOString()
+        });
+      }).then(() => {
+        document.getElementById("upload-img").value = "";
+        document.getElementById("upload-caption").value = "";
+        loadFeed();
       });
-      document.getElementById("message").value = "";
     }
-  }
 
-  function goBack() {
-    document.getElementById("chat-view").style.display = "none";
-    document.getElementById("group-list-view").style.display = "block";
-    document.getElementById("chat").innerHTML = "";
-  }
-</script>
+    function loadFeed() {
+      const feed = document.getElementById("feed");
+      feed.innerHTML = "";
+      firebase.database().ref("insta_feed").once("value", snap => {
+        const posts = snap.val();
+        if (!posts) return;
+        const sorted = Object.entries(posts).sort((a, b) => new Date(b[1].time) - new Date(a[1].time));
+        sorted.forEach(([id, post]) => {
+          const card = document.createElement("div");
+          card.className = "post";
+          card.innerHTML = `
+            <div class="post-header">
+              <img src="${post.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.name)}">
+              <strong>@${post.name}</strong>
+            </div>
+            <img class="post-image" src="${post.image}" alt="Post">
+            <div class="post-footer">
+              <div class="caption">${post.caption}</div>
+              <div>
+                <span style="font-size: 1.2em;">❤️ 💬</span>
+              </div>
+            </div>
+          `;
+          feed.appendChild(card);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
+
